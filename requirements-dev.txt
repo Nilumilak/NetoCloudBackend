@@ -1,0 +1,9 @@
+django
+djangorestframework
+djangorestframework-simplejwt
+psycopg2-binary
+python-dotenv
+pytest
+pytest-cov
+pytest-django
+model-bakery

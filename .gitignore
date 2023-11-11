@@ -3,3 +3,5 @@ venv
 media
 migrations
 __pycache__
+.pytest_cache
+.coverage

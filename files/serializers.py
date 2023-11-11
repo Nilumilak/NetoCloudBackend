@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import File
 import re
+from django.conf import settings
 
 
 class FileSerializer(serializers.ModelSerializer):
@@ -17,7 +18,7 @@ class FileSerializer(serializers.ModelSerializer):
     def validate_path(self, attrs):
         path_pattern = re.compile(r"(?:^[^\.\\]+/)+$")
         if not path_pattern.match(attrs):
-            raise serializers.ValidationError("Invalid path format. Forbidden symbols: '.', '\\'. Example: 'home/folder/path/'.")
+            raise serializers.ValidationError({"error": "Invalid path format. Forbidden symbols: '.', '\\'. Example: 'home/folder/path/'."})
         return attrs
     
     def create(self, validated_data):
@@ -29,10 +30,11 @@ class FileSerializer(serializers.ModelSerializer):
         validated_data['size'] = self.context.get('request').FILES.get('file_data').size
         validated_data['content_type'] = self.context.get('request').FILES.get('file_data').content_type
         validated_data['storage'] = self.context.get('request').user.storage
+        if validated_data['storage'].files_size + validated_data['size'] > settings.STORAGE_MAX_SIZE:
+            raise serializers.ValidationError({"error": f"User's storage is limited with max files_size value of {settings.STORAGE_MAX_SIZE}"})
         return super().create(validated_data)
     
     def get_owner(self, obj):
-        print('qlwkje')
         return {
             "username": obj.storage.owner.username,
             "email": obj.storage.owner.email

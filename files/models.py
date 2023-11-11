@@ -5,6 +5,7 @@ from storage.models import Storage
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
+
 def get_upload_path(instance, filename):
     return os.path.join(instance.storage.owner.username, *instance.path.split('/'), filename)
 
@@ -40,6 +41,8 @@ def file_create(sender, instance, using, **kwargs):
 
 @receiver(post_delete, sender=File)
 def file_delete(sender, instance, using, **kwargs):
+    if os.path.exists(instance.file_data.path):
+        os.remove(instance.file_data.path)
     storage = instance.storage
     storage.files_count -= 1
     storage.files_size -= instance.size

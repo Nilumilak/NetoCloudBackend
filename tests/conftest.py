@@ -2,11 +2,8 @@ import pytest
 from model_bakery import baker
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
-# address fixtures
-from storage.models import Storage
 from files.models import File
 from user.models import User
-from rest_framework_simplejwt.tokens import AccessToken
 
 
 @pytest.fixture
@@ -21,6 +18,17 @@ def user_factory():
 
 
 @pytest.fixture
+def file_factory():
+    """
+    User factory
+    """
+    def factory(*args, **kwargs):
+        return baker.make(File, *args, **kwargs)
+
+    return factory
+
+
+@pytest.fixture
 def client():
     """
     Returns api client to perform requests
@@ -29,7 +37,7 @@ def client():
 
 
 @pytest.fixture()
-def jwt_token_admin_facory(client):
+def jwt_token_admin_factory(client):
     """
     JWT Admin Token Factory
     """
@@ -43,6 +51,7 @@ def jwt_token_admin_facory(client):
         }
         response = client.post("/api/v1/users/", data=data, format="json")
         user = User.objects.first()
+        assert user is not None
         user.is_staff = True
         user.save()
         response = client.post("/api/v1/token/", data=data, format="json")
@@ -73,6 +82,7 @@ def jwt_token_regular_factory(client):
         }
         response = client.post("/api/v1/users/", data=data, format="json")
         user = User.objects.first()
+        assert user is not None
         response = client.post("/api/v1/token/", data=data, format="json")
         return {
             "token": response.json().get("access"),

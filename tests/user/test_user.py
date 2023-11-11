@@ -197,11 +197,11 @@ def test_list_users_wrong_token(client):
 
 
 @pytest.mark.django_db
-def test_list_users_admin(client, user_factory, jwt_token_admin_facory):
+def test_list_users_admin(client, user_factory, jwt_token_admin_factory):
     """
     Get user list info with admin token
     """
-    data = jwt_token_admin_facory("test", "test@test.ru", "test_name")
+    data = jwt_token_admin_factory("test", "test@test.ru", "test_name")
     users = user_factory(_quantity=5)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {data.get('token')}")
     response = client.get("/api/v1/users/")
@@ -229,7 +229,7 @@ def test_retrieve_users_no_token(client, user_factory):
     Get particular user info without token
     """
     user = user_factory()
-    response = client.get(f"/api/v1/users/{user.id}/")
+    response = client.get(f"/api/v1/users/{user.username}/")
     assert response.status_code == 401
     data = response.json()
     assert data == {"detail": "Authentication credentials were not provided."}
@@ -242,7 +242,7 @@ def test_retrieve_users_wrong_token(client, user_factory):
     """
     user = user_factory()
     client.credentials(HTTP_AUTHORIZATION=f"Bearer wrong_token")
-    response = client.get(f"/api/v1/users/{user.id}/")
+    response = client.get(f"/api/v1/users/{user.username}/")
     assert response.status_code == 401
     data = response.json()
     assert data == {'code': 'token_not_valid',
@@ -259,20 +259,20 @@ def test_retrieve_users_user_token(client, jwt_token_regular_factory):
     """
     data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {data.get('token')}")
-    response = client.get(f"/api/v1/users/{data.get('id')}/")
+    response = client.get(f"/api/v1/users/{data.get('username')}/")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == data.get('id')
 
 
 @pytest.mark.django_db
-def test_retrieve_users_user_not_exist(client, jwt_token_admin_facory):
+def test_retrieve_users_user_not_exist(client, jwt_token_admin_factory):
     """
     Get particular absent user info
     """
-    data = jwt_token_admin_facory("test", "test@test.ru", "test_name")
+    data = jwt_token_admin_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {data.get('token')}")
-    response = client.get("/api/v1/users/999/")
+    response = client.get("/api/v1/users/wrong_user/")
     assert response.status_code == 404
     data = response.json()
     assert data == {'detail': 'Not found.'}
@@ -319,11 +319,11 @@ def test_destroy_users_user_token(client, jwt_token_regular_factory):
 
 
 @pytest.mark.django_db
-def test_destroy_users_other_user_admin_token(client, user_factory, jwt_token_admin_facory):
+def test_destroy_users_other_user_admin_token(client, user_factory, jwt_token_admin_factory):
     """
     Delete particular user with admin token
     """
-    data = jwt_token_admin_facory("test", "test@test.ru", "test_name")
+    data = jwt_token_admin_factory("test", "test@test.ru", "test_name")
     user2 = user_factory()
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {data.get('token')}")
     response = client.delete(f"/api/v1/users/delete/{user2.id}/")
@@ -347,11 +347,11 @@ def test_destroy_users_other_user_token(client, user_factory, jwt_token_regular_
 
 
 @pytest.mark.django_db
-def test_destroy_users_user_not_exist(client, jwt_token_admin_facory):
+def test_destroy_users_user_not_exist(client, jwt_token_admin_factory):
     """
     Delete absent particular user
     """
-    data = jwt_token_admin_facory("test", "test@test.ru", "test_name")
+    data = jwt_token_admin_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {data.get('token')}")
     response = client.delete("/api/v1/users/delete/9999/")
     assert response.status_code == 404
@@ -418,11 +418,11 @@ def test_update_users_user_token(client, jwt_token_regular_factory):
 
 
 @pytest.mark.django_db
-def test_update_users_user_not_exist(client, jwt_token_admin_facory):
+def test_update_users_user_not_exist(client, jwt_token_admin_factory):
     """
     Update absent particular user info
     """
-    data = jwt_token_admin_facory("test", "test@test.ru", "test_name")
+    data = jwt_token_admin_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {data.get('token')}")
     response = client.patch("/api/v1/users/update/999/",
                             data={"username": "username"},
@@ -433,11 +433,11 @@ def test_update_users_user_not_exist(client, jwt_token_admin_facory):
 
 
 @pytest.mark.django_db
-def test_update_users_unique_fields(client, user_factory, jwt_token_admin_facory):
+def test_update_users_unique_fields(client, user_factory, jwt_token_admin_factory):
     """
     Update particular user unique fields to already existing values
     """
-    user_data = jwt_token_admin_facory("test", "test@test.ru", "test_name")
+    user_data = jwt_token_admin_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
     user2 = user_factory()
 

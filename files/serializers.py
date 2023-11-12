@@ -17,21 +17,21 @@ class FileSerializer(serializers.ModelSerializer):
         
     def validate_path(self, attrs):
         path_pattern = re.compile(r"(?:^[^\.\\]+/)+$")
-        if not path_pattern.match(attrs):
+        if not path_pattern.match(attrs) and attrs != "":
             raise serializers.ValidationError({"error": "Invalid path format. Forbidden symbols: '.', '\\'. Example: 'home/folder/path/'."})
         return attrs
     
     def create(self, validated_data):
-        obj = File.objects.filter(path=validated_data.get("path"), name=validated_data.get("name"))
+        obj = File.objects.filter(path=validated_data.get("path", ""), name=validated_data.get("name"))
         if obj.exists():
-            raise serializers.ValidationError({"error": f"File with path '{validated_data.get('path')}' and name '{validated_data.get('name')}' already exists."})
+            raise serializers.ValidationError({"error": f"File with path '{validated_data.get('path', '')}' and name '{validated_data.get('name')}' already exists."})
         
         validated_data['origin_name'] = self.context.get('request').FILES.get('file_data').name
         validated_data['size'] = self.context.get('request').FILES.get('file_data').size
         validated_data['content_type'] = self.context.get('request').FILES.get('file_data').content_type
         validated_data['storage'] = self.context.get('request').user.storage
         if validated_data['storage'].files_size + validated_data['size'] > settings.STORAGE_MAX_SIZE:
-            raise serializers.ValidationError({"error": f"User's storage is limited with max files_size value of {settings.STORAGE_MAX_SIZE}"})
+            raise serializers.ValidationError({"error": f"User's storage is limited with max files_size value of {settings.STORAGE_MAX_SIZE // 1000000000} GB"})
         return super().create(validated_data)
     
     def get_owner(self, obj):

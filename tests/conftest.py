@@ -62,7 +62,8 @@ def jwt_token_admin_factory(client):
             "password": "testpassword!",
             "hash_password": user.password,
             "email": user.email,
-            "full_name": user.full_name
+            "full_name": user.full_name,
+            "storage_id": user.storage.pk
         }
     return factory
 
@@ -91,6 +92,7 @@ def jwt_token_regular_factory(client):
             "password": "testpassword!",
             "hash_password": user.password,
             "email": user.email,
-            "full_name": user.full_name
+            "full_name": user.full_name,
+            "storage_id": user.storage.pk
         }
     return factory

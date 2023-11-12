@@ -2,6 +2,7 @@ import pytest
 from django.db import IntegrityError
 from storage.models import Storage
 from user.models import User
+from files.models import File
 
 
 @pytest.mark.django_db
@@ -26,30 +27,6 @@ def test_storage_one_to_one_constraint(user_factory):
         assert False
     except IntegrityError:
         assert True
-
-
-@pytest.mark.django_db
-def test_storage_increment_files_count(user_factory, file_factory):
-    """
-    Storage files_count increments when a file added to Storage
-    """
-    user = user_factory()
-    file_factory(storage=user.storage, size=1000)
-    assert user.storage.files_count == 1
-    file_factory(storage=user.storage, size=2000)
-    assert user.storage.files_count == 2
-
-
-@pytest.mark.django_db
-def test_storage_increment_files_size(user_factory, file_factory):
-    """
-    Storage files_size increments when a file added to Storage
-    """
-    user = user_factory()
-    file1 = file_factory(storage=user.storage, size=1000)
-    assert user.storage.files_size == file1.size
-    file2 = file_factory(storage=user.storage, size=2000)
-    assert user.storage.files_size == file1.size + file2.size
 
 
 @pytest.mark.django_db

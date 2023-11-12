@@ -17,7 +17,7 @@ class File(models.Model):
     url = models.UUIDField(default=uuid.uuid4, editable=False)
     content_type = models.CharField(max_length=50)
     size = models.PositiveIntegerField()
-    path = models.CharField(max_length=300)
+    path = models.CharField(max_length=300, default="")
     note = models.CharField(max_length=1000, blank=True, default="")
     last_download = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,8 +41,11 @@ def file_create(sender, instance, using, **kwargs):
 
 @receiver(post_delete, sender=File)
 def file_delete(sender, instance, using, **kwargs):
-    if os.path.exists(instance.file_data.path):
-        os.remove(instance.file_data.path)
+    try:
+        if os.path.exists(instance.file_data.path):
+            os.remove(instance.file_data.path)
+    except ValueError as err:
+        print(err)
     storage = instance.storage
     storage.files_count -= 1
     storage.files_size -= instance.size

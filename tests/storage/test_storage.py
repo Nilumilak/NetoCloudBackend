@@ -2,6 +2,17 @@ import pytest
 
 
 @pytest.mark.django_db
+def test_storage_list_view_no_token(client):
+    """
+    Get storage list without token
+    """
+    response = client.get("/api/v1/storages/")
+    assert response.status_code == 401
+    data = response.json()
+    assert data == {'detail': 'Authentication credentials were not provided.'}
+
+
+@pytest.mark.django_db
 def test_storage_list_view_admin(client, jwt_token_admin_factory):
     """
     Get storage list with admin token
@@ -25,6 +36,29 @@ def test_storage_list_view_regular(client, jwt_token_regular_factory):
     assert response.status_code == 403
     data = response.json()
     assert data == {'detail': 'You do not have permission to perform this action.'}
+
+
+@pytest.mark.django_db
+def test_storage_retrieve_view_not_exists(client):
+    """
+    Get storage that does not exist
+    """
+    response = client.get("/api/v1/storages/1/")
+    assert response.status_code == 404
+    data = response.json()
+    assert data == {'detail': 'Not found.'}
+
+
+@pytest.mark.django_db
+def test_storage_retrieve_view_no_token(client, user_factory):
+    """
+    Get particular storage without token
+    """
+    user = user_factory()
+    response = client.get(f"/api/v1/storages/{user.storage.id}/")
+    assert response.status_code == 401
+    data = response.json()
+    assert data == {'detail': 'Authentication credentials were not provided.'}
 
 
 @pytest.mark.django_db

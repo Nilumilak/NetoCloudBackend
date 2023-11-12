@@ -4,14 +4,13 @@ from django.db import models
 
 
 class User(AbstractUser):
-    """
-    Class to describe user
-    """
     username = models.CharField(max_length=20, unique=True, validators=[MinLengthValidator(4)])
     full_name = models.CharField(max_length=50)
     email = models.EmailField(
         unique=True,
-        error_messages={"unique": "A user with that email already exists.", }
+        error_messages={
+            "unique": "A user with that email already exists.",
+        },
     )
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email", "full_name"]

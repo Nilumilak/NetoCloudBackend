@@ -1,5 +1,6 @@
 import pytest
 from django.db import IntegrityError
+
 from user.models import User
 
 
@@ -31,15 +32,15 @@ def test_update_user(user_factory):
     user = user_factory()
 
     user_db = User.objects.get(id=user.pk)
-    user_db.username = 'update'
-    user_db.email = 'update@update.com'
-    user_db.full_name = 'update'
+    user_db.username = "update"
+    user_db.email = "update@update.com"
+    user_db.full_name = "update"
     user_db.save()
 
     updated_user = User.objects.get(id=user.pk)
-    assert updated_user.username == 'update'
-    assert updated_user.email == 'update@update.com'
-    assert updated_user.full_name == 'update'
+    assert updated_user.username == "update"
+    assert updated_user.email == "update@update.com"
+    assert updated_user.full_name == "update"
 
 
 @pytest.mark.django_db

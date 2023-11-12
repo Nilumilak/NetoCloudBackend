@@ -1,8 +1,9 @@
 import pytest
 from django.db import IntegrityError
+
+from files.models import File
 from storage.models import Storage
 from user.models import User
-from files.models import File
 
 
 @pytest.mark.django_db

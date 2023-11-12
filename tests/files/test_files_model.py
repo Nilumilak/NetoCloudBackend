@@ -1,4 +1,5 @@
 import pytest
+
 from files.models import File
 
 
@@ -37,13 +38,13 @@ def test_update_file(user_factory, file_factory):
     file = file_factory(storage=user.storage, size=100)
 
     file_db = File.objects.get(id=file.pk)
-    file_db.name = 'update'
-    file_db.note = 'update'
+    file_db.name = "update"
+    file_db.note = "update"
     file_db.save()
 
     updated_file = File.objects.get(id=file.pk)
-    assert updated_file.name == 'update'
-    assert updated_file.note == 'update'
+    assert updated_file.name == "update"
+    assert updated_file.note == "update"
 
 
 @pytest.mark.django_db

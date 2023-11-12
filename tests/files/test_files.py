@@ -1,14 +1,19 @@
-import pytest
 import shutil
-from user.models import User
+
+import pytest
+from django.conf import settings
+
 from files.models import File
 from storage.models import Storage
-from django.conf import settings
+from user.models import User
 
 
 def teardown_function():
+    """
+    Delete created files during testing
+    """
     try:
-        shutil.rmtree('./media/test/')
+        shutil.rmtree("./media/test/")
     except FileNotFoundError:
         pass
 
@@ -19,7 +24,7 @@ def test_create_file_no_token(client, user_factory):
     Create file without token
     """
     user_factory()
-    with open('./requirements.txt', 'rb') as file:
+    with open("./requirements.txt", "rb") as file:
         data = {
             "file_data": file,
             "name": "requirements.txt",
@@ -27,7 +32,7 @@ def test_create_file_no_token(client, user_factory):
         response = client.post("/api/v1/files/", data=data)
         assert response.status_code == 401
         data = response.json()
-        assert data == {'detail': 'Authentication credentials were not provided.'}
+        assert data == {"detail": "Authentication credentials were not provided."}
 
 
 @pytest.mark.django_db
@@ -37,12 +42,12 @@ def test_create_file_regular_token(client, jwt_token_regular_factory):
     """
     user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    with open('./requirements.txt', 'rb') as file:
+    with open("./requirements.txt", "rb") as file:
         data = {
             "file_data": file,
             "name": "requirements.txt",
             "path": "home/test/",
-            "note": "test_note"
+            "note": "test_note",
         }
         response = client.post("/api/v1/files/", data=data)
         assert response.status_code == 201
@@ -68,14 +73,14 @@ def test_create_file_with_name_exists(client, jwt_token_regular_factory):
     """
     user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    with open('./requirements.txt', 'rb') as file:
+    with open("./requirements.txt", "rb") as file:
         data = {
             "file_data": file,
             "name": "requirements.txt",
         }
         response = client.post("/api/v1/files/", data=data)
         assert response.status_code == 201
-    with open('./requirements.txt', 'rb') as file:
+    with open("./requirements.txt", "rb") as file:
         data = {
             "file_data": file,
             "name": "requirements.txt",
@@ -83,7 +88,7 @@ def test_create_file_with_name_exists(client, jwt_token_regular_factory):
         response = client.post("/api/v1/files/", data=data)
         data = response.json()
         assert response.status_code == 400
-        assert data == {"error": f"File with path '' and name 'requirements.txt' already exists."}
+        assert data == {"error": "File with path '' and name 'requirements.txt' already exists."}
 
 
 @pytest.mark.django_db
@@ -93,24 +98,16 @@ def test_create_file_with_name_and_path_exists(client, jwt_token_regular_factory
     """
     user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    with open('./requirements.txt', 'rb') as file:
-        data = {
-            "file_data": file,
-            "name": "requirements.txt",
-            "path": "home/test/"
-        }
+    with open("./requirements.txt", "rb") as file:
+        data = {"file_data": file, "name": "requirements.txt", "path": "home/test/"}
         response = client.post("/api/v1/files/", data=data)
         assert response.status_code == 201
-    with open('./requirements.txt', 'rb') as file:
-        data = {
-            "file_data": file,
-            "name": "requirements.txt",
-            "path": "home/test/"
-        }
+    with open("./requirements.txt", "rb") as file:
+        data = {"file_data": file, "name": "requirements.txt", "path": "home/test/"}
         response = client.post("/api/v1/files/", data=data)
         data = response.json()
         assert response.status_code == 400
-        assert data == {"error": f"File with path 'home/test/' and name 'requirements.txt' already exists."}
+        assert data == {"error": "File with path 'home/test/' and name 'requirements.txt' already exists."}
 
 
 @pytest.mark.django_db
@@ -120,20 +117,16 @@ def test_get_uploaded_file(client, jwt_token_regular_factory):
     """
     user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    with open('./requirements.txt', 'rb') as file:
-        data = {
-            "file_data": file,
-            "name": "requirements.txt",
-            "path": "home/test/"
-        }
+    with open("./requirements.txt", "rb") as file:
+        data = {"file_data": file, "name": "requirements.txt", "path": "home/test/"}
         response = client.post("/api/v1/files/", data=data)
         data = response.json()
         assert response.status_code == 201
-        assert data.get('last_download') is None
-    client.credentials(HTTP_AUTHORIZATION='')
+        assert data.get("last_download") is None
+    client.credentials(HTTP_AUTHORIZATION="")
     response = client.get(data.get("url_path"))
     assert response.status_code == 200
-    assert File.objects.get(pk=data.get('pk')).last_download is not None
+    assert File.objects.get(pk=data.get("pk")).last_download is not None
 
 
 @pytest.mark.django_db
@@ -143,7 +136,7 @@ def test_update_uploaded_file_regular_token(client, jwt_token_regular_factory):
     """
     user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    with open('./requirements.txt', 'rb') as file:
+    with open("./requirements.txt", "rb") as file:
         data = {
             "file_data": file,
             "name": "requirements.txt",
@@ -151,17 +144,14 @@ def test_update_uploaded_file_regular_token(client, jwt_token_regular_factory):
         response = client.post("/api/v1/files/", data=data)
         data = response.json()
         assert response.status_code == 201
-        assert data.get('note') == ""
-        assert data.get('name') == "requirements.txt"
-    update_data = {
-        "name": "test_file.txt",
-        "note": "test_note"
-    }
+        assert data.get("note") == ""
+        assert data.get("name") == "requirements.txt"
+    update_data = {"name": "test_file.txt", "note": "test_note"}
     response = client.put(f'/api/v1/files/update/{data.get("pk")}/', data=update_data)
     data = response.json()
     assert response.status_code == 200
-    assert data.get('name') == update_data.get('name')
-    assert data.get('note') == update_data.get('note')
+    assert data.get("name") == update_data.get("name")
+    assert data.get("note") == update_data.get("note")
 
 
 @pytest.mark.django_db
@@ -173,14 +163,11 @@ def test_update_uploaded_file_regular_token_other_file(client, user_factory, fil
     user = user_factory()
     file = file_factory(storage=user.storage)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    update_data = {
-        "name": "test_file.txt",
-        "note": "test_note"
-    }
-    response = client.put(f'/api/v1/files/update/{file.pk}/', data=update_data)
+    update_data = {"name": "test_file.txt", "note": "test_note"}
+    response = client.put(f"/api/v1/files/update/{file.pk}/", data=update_data)
     data = response.json()
     assert response.status_code == 403
-    assert data == {'detail': 'You do not have permission to perform this action.'}
+    assert data == {"detail": "You do not have permission to perform this action."}
 
 
 @pytest.mark.django_db
@@ -192,15 +179,12 @@ def test_update_uploaded_file_admin_token_other_file(client, user_factory, file_
     user = user_factory()
     file = file_factory(storage=user.storage, size=1000)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    update_data = {
-        "name": "test_file.txt",
-        "note": "test_note"
-    }
-    response = client.put(f'/api/v1/files/update/{file.pk}/', data=update_data)
+    update_data = {"name": "test_file.txt", "note": "test_note"}
+    response = client.put(f"/api/v1/files/update/{file.pk}/", data=update_data)
     data = response.json()
     assert response.status_code == 200
-    assert data.get('name') == update_data.get('name')
-    assert data.get('note') == update_data.get('note')
+    assert data.get("name") == update_data.get("name")
+    assert data.get("note") == update_data.get("note")
 
 
 @pytest.mark.django_db
@@ -216,10 +200,10 @@ def test_update_uploaded_file_with_same_name(client, user_factory, file_factory,
     update_data = {
         "name": file1.name,
     }
-    response = client.put(f'/api/v1/files/update/{file2.pk}/', data=update_data)
+    response = client.put(f"/api/v1/files/update/{file2.pk}/", data=update_data)
     data = response.json()
     assert response.status_code == 400
-    assert data == {'error': f"File with path '' and name '{file1.name}' already exists."}
+    assert data == {"error": f"File with path '' and name '{file1.name}' already exists."}
 
 
 @pytest.mark.django_db
@@ -229,10 +213,10 @@ def test_delete_uploaded_file(client, user_factory, file_factory):
     """
     user = user_factory()
     file = file_factory(storage=user.storage)
-    response = client.delete(f'/api/v1/files/delete/{file.pk}/')
+    response = client.delete(f"/api/v1/files/delete/{file.pk}/")
     data = response.json()
     assert response.status_code == 401
-    assert data == {'detail': 'Authentication credentials were not provided.'}
+    assert data == {"detail": "Authentication credentials were not provided."}
 
 
 @pytest.mark.django_db
@@ -241,10 +225,10 @@ def test_delete_uploaded_file_regular_token(client, file_factory, jwt_token_regu
     Delete particular file with regular token
     """
     user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
-    storage = Storage.objects.get(id=user_data.get('storage_id'))
+    storage = Storage.objects.get(id=user_data.get("storage_id"))
     file = file_factory(storage=storage)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    response = client.delete(f'/api/v1/files/delete/{file.pk}/')
+    response = client.delete(f"/api/v1/files/delete/{file.pk}/")
     assert response.status_code == 204
 
 
@@ -257,10 +241,10 @@ def test_delete_uploaded_file_regular_token_other_file(client, user_factory, fil
     user = user_factory()
     file = file_factory(storage=user.storage)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    response = client.delete(f'/api/v1/files/delete/{file.pk}/')
+    response = client.delete(f"/api/v1/files/delete/{file.pk}/")
     data = response.json()
     assert response.status_code == 403
-    assert data == {'detail': 'You do not have permission to perform this action.'}
+    assert data == {"detail": "You do not have permission to perform this action."}
 
 
 @pytest.mark.django_db
@@ -272,15 +256,13 @@ def test_delete_uploaded_file_admin_token_other_file(client, user_factory, file_
     user = user_factory()
     file = file_factory(storage=user.storage)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    response = client.delete(f'/api/v1/files/delete/{file.pk}/')
+    response = client.delete(f"/api/v1/files/delete/{file.pk}/")
     assert response.status_code == 204
 
 
 @pytest.mark.parametrize(
     ["path"],
-    (("home/test./",),
-     (r"home/te\st",),
-     ("home",)),
+    (("home/test./",), (r"home/te\st",), ("home",)),
 )
 @pytest.mark.django_db
 def test_create_file_invalid_path_constraint(path, client, jwt_token_regular_factory):
@@ -289,12 +271,12 @@ def test_create_file_invalid_path_constraint(path, client, jwt_token_regular_fac
     """
     user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    with open('./requirements.txt', 'rb') as file:
+    with open("./requirements.txt", "rb") as file:
         data = {
             "file_data": file,
             "name": "requirements.txt",
             "path": path,
-            "note": "test_note"
+            "note": "test_note",
         }
         response = client.post("/api/v1/files/", data=data)
         assert response.status_code == 400
@@ -308,10 +290,10 @@ def test_max_storage_files_size_constraint(client, file_factory, jwt_token_regul
     Delete particular of other owner file with admin token
     """
     user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
-    storage = Storage.objects.get(id=user_data.get('storage_id'))
+    storage = Storage.objects.get(id=user_data.get("storage_id"))
     file = file_factory(storage=storage, size=settings.STORAGE_MAX_SIZE - 1, path="")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    with open('./requirements.txt', 'rb') as file:
+    with open("./requirements.txt", "rb") as file:
         data = {
             "file_data": file,
             "name": "requirements.txt",

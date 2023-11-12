@@ -1,0 +1,71 @@
+name: Linter/Tests
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
+    env:
+      POSTGRES_ENGINE: ${{ secrets.DB_ENGINE }}
+      POSTGRES_USER: ${{ secrets.DB_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.DB_NAME }}
+      POSTGRES_HOST: ${{ secrets.DB_HOST }}
+      POSTGRES_PORT: ${{ secrets.DB_PORT }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      DEBUG: "1"
+      ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+
+    services:
+      postgres-main:
+        image: postgres:12
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options:
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+          
+      - name: Lint with pylint
+        run: pylint --load-plugins pylint_django --django-settings-module=NetoCloud.settings --recursive=y .
+
+      - name: Tests
+        run: |
+          python manage.py makemigrations
+          python manage.py makemigrations user
+          python manage.py makemigrations storage
+          python manage.py makemigrations files
+          python manage.py migrate
+          pytest
+        env:
+          SECRET_KEY: ${{ env.SECRET_KEY }}
+          DEBUG: ${{ env.DEBUG }}
+          ALLOWED_HOSTS: ${{ env.ALLOWED_HOSTS }}
+          DB_ENGINE: ${{ env.POSTGRES_ENGINE }}
+          DB_USER: ${{ env.POSTGRES_USER }}
+          DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          DB_HOST: ${{ env.POSTGRES_HOST }}
+          DB_PORT: ${{ env.POSTGRES_PORT }}
+          DB_NAME: ${{ env.POSTGRES_DB }}

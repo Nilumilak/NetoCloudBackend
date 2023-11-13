@@ -15,6 +15,17 @@ def get_upload_path(instance, filename):
     return os.path.join(instance.storage.owner.username, *instance.path.split("/"), filename)
 
 
+def clear_empty_folders(path):
+    """
+    Clears empty folders
+    """
+    if path.endswith('media'):
+        return
+    if not os.listdir(path):
+        os.rmdir(path)
+        clear_empty_folders(os.path.dirname(path))
+
+
 class File(models.Model):
     file_data = models.FileField(upload_to=get_upload_path)
     storage = models.ForeignKey(Storage, on_delete=models.CASCADE, related_name="files")
@@ -62,6 +73,7 @@ def file_delete(sender, instance, using, **kwargs):
     try:
         if os.path.exists(instance.file_data.path):
             os.remove(instance.file_data.path)
+            clear_empty_folders(os.path.dirname(instance.file_data.path))
     except ValueError as err:
         print(err)
     storage = instance.storage

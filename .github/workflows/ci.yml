@@ -22,6 +22,7 @@ jobs:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       DEBUG: "1"
       ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+      ALLOWED_CORS_ORIGINS: ${{ secrets.ALLOWED_CORS_ORIGINS }}
 
     services:
       postgres-main:
@@ -63,6 +64,7 @@ jobs:
           SECRET_KEY: ${{ env.SECRET_KEY }}
           DEBUG: ${{ env.DEBUG }}
           ALLOWED_HOSTS: ${{ env.ALLOWED_HOSTS }}
+          ALLOWED_CORS_ORIGINS: ${{ env.ALLOWED_CORS_ORIGINS }}
           DB_ENGINE: ${{ env.POSTGRES_ENGINE }}
           DB_USER: ${{ env.POSTGRES_USER }}
           DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}

@@ -53,7 +53,6 @@ def test_create_file_regular_token(client, jwt_token_regular_factory):
         assert response.status_code == 201
         data = response.json()
         assert data.get("name") == "requirements.txt"
-        assert data.get("owner").get("username") == user_data.get("username")
         assert data.get("note") == "test_note"
         assert data.get("path") == "home/test/"
         user = User.objects.get(username=user_data.get("username"))

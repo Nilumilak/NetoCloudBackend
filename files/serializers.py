@@ -10,7 +10,6 @@ class FileSerializer(serializers.ModelSerializer):
     file_data = serializers.FileField(write_only=True)
     content_type = serializers.CharField(read_only=True)
     size = serializers.CharField(read_only=True)
-    owner = serializers.SerializerMethodField(read_only=True)
     origin_name = serializers.CharField(read_only=True)
 
     class Meta:
@@ -26,7 +25,6 @@ class FileSerializer(serializers.ModelSerializer):
             "note",
             "last_download",
             "created_at",
-            "owner",
             "file_data",
         ]
 
@@ -45,25 +43,17 @@ class FileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"error": f"File with path '{validated_data.get('path', '')}' and name '{validated_data.get('name')}' already exists."}
             )
-
-        validated_data["origin_name"] = self.context.get("request").FILES.get("file_data").name
-        validated_data["size"] = self.context.get("request").FILES.get("file_data").size
-        validated_data["content_type"] = self.context.get("request").FILES.get("file_data").content_type
-        validated_data["storage"] = self.context.get("request").user.storage
+        
+        request = self.context.get("request")
+        validated_data["origin_name"] = request.FILES.get("file_data").name
+        validated_data["size"] = request.FILES.get("file_data").size
+        validated_data["content_type"] = request.FILES.get("file_data").content_type
+        validated_data["storage"] = request.user.storage
         if validated_data["storage"].files_size + validated_data["size"] > settings.STORAGE_MAX_SIZE:
             raise serializers.ValidationError(
                 {"error": f"User's storage is limited with max files_size value of {settings.STORAGE_MAX_SIZE // 1000000000} GB"}
             )
         return super().create(validated_data)
-
-    def get_owner(self, obj):
-        """
-        Returns data for owner field
-        """
-        return {
-            "username": obj.storage.owner.username,
-            "email": obj.storage.owner.email,
-        }
 
 
 class FileUpdateSerializer(serializers.ModelSerializer):

@@ -68,7 +68,7 @@ def test_storage_retrieve_view_regular(client, jwt_token_regular_factory):
     """
     user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
-    storage_id = client.get(f"/api/v1/users/{user_data.get('username')}/").json().get("storage_id")
+    storage_id = client.get(f"/api/v1/users/{user_data.get('id')}/").json().get("storage_id")
     response = client.get(f"/api/v1/storages/{storage_id}/")
     assert response.status_code == 200
     data = response.json()

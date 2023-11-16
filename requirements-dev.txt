@@ -3,6 +3,7 @@ djangorestframework
 djangorestframework-simplejwt
 psycopg2-binary
 python-dotenv
+django-cors-headers
 pytest
 pytest-cov
 pytest-django

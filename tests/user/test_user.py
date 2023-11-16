@@ -240,7 +240,7 @@ def test_retrieve_users_no_token(client, user_factory):
     Get particular user info without token
     """
     user = user_factory()
-    response = client.get(f"/api/v1/users/{user.username}/")
+    response = client.get(f"/api/v1/users/{user.id}/")
     assert response.status_code == 401
     data = response.json()
     assert data == {"detail": "Authentication credentials were not provided."}
@@ -253,7 +253,7 @@ def test_retrieve_users_wrong_token(client, user_factory):
     """
     user = user_factory()
     client.credentials(HTTP_AUTHORIZATION="Bearer wrong_token")
-    response = client.get(f"/api/v1/users/{user.username}/")
+    response = client.get(f"/api/v1/users/{user.id}/")
     assert response.status_code == 401
     data = response.json()
     assert data == {
@@ -276,7 +276,7 @@ def test_retrieve_users_user_token(client, jwt_token_regular_factory):
     """
     data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {data.get('token')}")
-    response = client.get(f"/api/v1/users/{data.get('username')}/")
+    response = client.get(f"/api/v1/users/{data.get('id')}/")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == data.get("id")
@@ -289,7 +289,7 @@ def test_retrieve_users_user_not_exist(client, jwt_token_admin_factory):
     """
     data = jwt_token_admin_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {data.get('token')}")
-    response = client.get("/api/v1/users/wrong_user/")
+    response = client.get("/api/v1/users/9999/")
     assert response.status_code == 404
     data = response.json()
     assert data == {"detail": "Not found."}

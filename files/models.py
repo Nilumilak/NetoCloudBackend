@@ -32,7 +32,7 @@ class File(models.Model):
     name = models.CharField(max_length=100)
     origin_name = models.CharField(max_length=100)
     url = models.UUIDField(default=uuid.uuid4, editable=False)
-    content_type = models.CharField(max_length=50)
+    content_type = models.CharField(max_length=100)
     size = models.PositiveIntegerField()
     path = models.CharField(max_length=300, default="")
     note = models.CharField(max_length=1000, blank=True, default="")
@@ -44,7 +44,7 @@ class File(models.Model):
         """
         Returns url_path for file download
         """
-        return f"/api/v1/files/{self.url}/"
+        return f"/{self.url}/"
 
     def __str__(self) -> str:
         """

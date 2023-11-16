@@ -66,10 +66,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "NetoCloud.urls"
 CORS_URLS_REGEX = r"^/api/.*"
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'https://localhost:5173',
-]
+CORS_ALLOWED_ORIGINS = os.getenv("ALLOWED_CORS_ORIGINS").split(",")
 
 TEMPLATES = [
     {

@@ -43,7 +43,7 @@ class FileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"error": f"File with path '{validated_data.get('path', '')}' and name '{validated_data.get('name')}' already exists."}
             )
-        
+
         request = self.context.get("request")
         validated_data["origin_name"] = request.FILES.get("file_data").name
         validated_data["size"] = request.FILES.get("file_data").size

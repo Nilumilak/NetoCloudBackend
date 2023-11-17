@@ -171,7 +171,7 @@ def test_create_user_password_repeat_differs(client):
     response = client.post("/api/v1/users/", data=data, format="json")
     assert response.status_code == 400
     reply = response.json()
-    assert reply == {"password": ["Passwort fields does not match."]}
+    assert reply == {"password": ["Password fields does not match."]}
 
 
 @pytest.mark.django_db
@@ -577,4 +577,4 @@ def test_update_users_password_to_same_patch(client, jwt_token_regular_factory):
     response = client.patch(f"/api/v1/users/update/{user_data.get('id')}/", data=patch_data, format="json")
     assert response.status_code == 400
     data = response.json()
-    assert data == {"password": ["New passport cannot be the same as the old one"]}
+    assert data == {"password": ["New password cannot be the same as the old one"]}

@@ -23,12 +23,12 @@ class PasswordValidatorMixin:
             )
         if raw_password1 != raw_password2:
             return Response(
-                {"password": ["Passwort fields does not match."]},
+                {"password": ["Password fields does not match."]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if request.data.get("current_password") == raw_password1:
             return Response(
-                {"password": ["New passport cannot be the same as the old one"]},
+                {"password": ["New password cannot be the same as the old one"]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:

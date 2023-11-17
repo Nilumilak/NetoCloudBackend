@@ -24,14 +24,17 @@ class FileDownloadView(generics.RetrieveAPIView):
     lookup_field = "url"
 
     def get(self, request, *args, **kwargs):
+        request_url = request.get_full_path()
+        is_download = request_url.split("/")[1] == 'download'
         file_obj = self.get_object()
         file_path = os.path.join(settings.MEDIA_ROOT, *file_obj.file_data.name.split("/"))
         if os.path.exists(file_path):
-            file_obj.last_download = timezone.now()
-            file_obj.save()
+            if is_download:
+                file_obj.last_download = timezone.now()
+                file_obj.save()
             with open(file_path, "rb") as fh:
                 response = HttpResponse(fh.read(), content_type=file_obj.content_type)
-                response["Content-Disposition"] = "inline; filename=" + file_obj.name
+                response["Content-Disposition"] = f"{'attachment' if is_download else 'inline'}; filename={file_obj.name}"
                 return response
         else:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)

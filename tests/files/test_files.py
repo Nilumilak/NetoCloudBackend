@@ -110,9 +110,28 @@ def test_create_file_with_name_and_path_exists(client, jwt_token_regular_factory
 
 
 @pytest.mark.django_db
-def test_get_uploaded_file(client, jwt_token_regular_factory):
+def test_download_uploaded_file(client, jwt_token_regular_factory):
     """
-    Get uploaded file from storage without token
+    Download uploaded file from storage without token
+    """
+    user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
+    with open("./requirements.txt", "rb") as file:
+        data = {"file_data": file, "name": "requirements.txt", "path": "home/test/"}
+        response = client.post("/api/v1/files/", data=data)
+        data = response.json()
+        assert response.status_code == 201
+        assert data.get("last_download") is None
+    client.credentials(HTTP_AUTHORIZATION="")
+    response = client.get("/download" + data.get("url_path"))
+    assert response.status_code == 200
+    assert File.objects.get(pk=data.get("pk")).last_download is not None
+
+
+@pytest.mark.django_db
+def test_show_uploaded_file(client, jwt_token_regular_factory):
+    """
+    Show uploaded file from storage without token
     """
     user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
@@ -125,7 +144,7 @@ def test_get_uploaded_file(client, jwt_token_regular_factory):
     client.credentials(HTTP_AUTHORIZATION="")
     response = client.get(data.get("url_path"))
     assert response.status_code == 200
-    assert File.objects.get(pk=data.get("pk")).last_download is not None
+    assert File.objects.get(pk=data.get("pk")).last_download is None
 
 
 @pytest.mark.django_db

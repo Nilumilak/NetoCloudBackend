@@ -44,6 +44,11 @@ class UserDetailedView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = [isStaffOrUserPermission]
 
+    def get_serializer_class(self):
+        if self.request.user.is_staff:
+            return UserSerializerAdmin
+        return UserSerializer
+
 
 class UserUpdateView(generics.UpdateAPIView, PasswordValidatorMixin):
     queryset = User.objects.all()

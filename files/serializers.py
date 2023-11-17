@@ -38,13 +38,13 @@ class FileSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        obj = File.objects.filter(path=validated_data.get("path", ""), name=validated_data.get("name"))
+        request = self.context.get("request")
+        obj = File.objects.filter(storage__owner=request.user, path=validated_data.get("path", ""), name=validated_data.get("name"))
         if obj.exists():
             raise serializers.ValidationError(
                 {"error": f"File with path '{validated_data.get('path', '')}' and name '{validated_data.get('name')}' already exists."}
             )
 
-        request = self.context.get("request")
         validated_data["origin_name"] = request.FILES.get("file_data").name
         validated_data["size"] = request.FILES.get("file_data").size
         validated_data["content_type"] = request.FILES.get("file_data").content_type

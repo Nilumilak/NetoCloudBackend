@@ -578,3 +578,61 @@ def test_update_users_password_to_same_patch(client, jwt_token_regular_factory):
     assert response.status_code == 400
     data = response.json()
     assert data == {"password": ["New password cannot be the same as the old one"]}
+
+
+@pytest.mark.django_db
+def test_update_users_staff_status_change_no_token(client, user_factory):
+    """
+    Changing is_staff field without token
+    """
+    user = user_factory(is_staff=False)
+    patch_data = {"is_staff": True}
+    response = client.patch(f"/api/v1/users/update/{user.pk}/", data=patch_data, format="json")
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Authentication credentials were not provided."}
+
+
+@pytest.mark.django_db
+def test_update_users_staff_status_change_regular_token(client, jwt_token_regular_factory):
+    """
+    Changing is_staff field with regular token
+    """
+    user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
+    patch_data = {"is_staff": True}
+    response = client.patch(f"/api/v1/users/update/{user_data.get('id')}/", data=patch_data, format="json")
+    assert response.status_code == 200
+    data = response.json()
+    assert "is_staff" not in data
+    user = User.objects.get(username=user_data.get("username"))
+    assert not user.is_staff
+
+
+@pytest.mark.django_db
+def test_update_other_users_staff_status_change_regular_token(client, user_factory, jwt_token_regular_factory):
+    """
+    Changing is_staff field of other user with regular token
+    """
+    user_data = jwt_token_regular_factory("test", "test@test.ru", "test_name")
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
+    user = user_factory(is_staff=False)
+    patch_data = {"is_staff": True}
+    response = client.patch(f"/api/v1/users/update/{user.pk}/", data=patch_data, format="json")
+    assert response.status_code == 403
+    data = response.json()
+    assert data == {"detail": "You do not have permission to perform this action."}
+
+
+@pytest.mark.django_db
+def test_update_other_users_staff_status_change_admin_token(client, user_factory, jwt_token_admin_factory):
+    """
+    Changing is_staff field of other user with admin token
+    """
+    user_data = jwt_token_admin_factory("test", "test@test.ru", "test_name")
+    user = user_factory(is_staff=False)
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_data.get('token')}")
+    patch_data = {"is_staff": True}
+    response = client.patch(f"/api/v1/users/update/{user.pk}/", data=patch_data, format="json")
+    assert response.status_code == 200
+    data = response.json()
+    assert data.get("is_staff") is True

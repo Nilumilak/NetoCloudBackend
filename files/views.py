@@ -25,7 +25,7 @@ class FileDownloadView(generics.RetrieveAPIView):
 
     def get(self, request, *args, **kwargs):
         request_url = request.get_full_path()
-        is_download = request_url.split("/")[1] == 'download'
+        is_download = request_url.split("/")[1] == "download"
         file_obj = self.get_object()
         file_path = os.path.join(settings.MEDIA_ROOT, *file_obj.file_data.name.split("/"))
         if os.path.exists(file_path):

@@ -10,7 +10,7 @@ from .serializers import UserSerializer, UserSerializerAdmin
 
 
 class UserListCreateView(generics.ListAPIView, generics.CreateAPIView, PasswordValidatorMixin):
-    queryset = User.objects.all()
+    queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     permission_classes = [isStaffEditorPermission]
 
@@ -54,6 +54,11 @@ class UserUpdateView(generics.UpdateAPIView, PasswordValidatorMixin):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [isStaffOrUserPermission]
+
+    def get_serializer_class(self):
+        if self.request.user.is_staff:
+            return UserSerializerAdmin
+        return UserSerializer
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)

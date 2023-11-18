@@ -19,7 +19,7 @@ def clear_empty_folders(path):
     """
     Clears empty folders
     """
-    if path.endswith('media'):
+    if path.endswith("media"):
         return
     if not os.listdir(path):
         os.rmdir(path)

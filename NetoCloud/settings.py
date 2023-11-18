@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "storage",
     "files",
     # third patry packages
-    'corsheaders',
+    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
 ]

@@ -1,4 +1,5 @@
 from django.contrib.auth.hashers import check_password, make_password
+from django.db.models import Q
 from rest_framework import generics, status
 from rest_framework.response import Response
 
@@ -10,9 +11,12 @@ from .serializers import UserSerializer, UserSerializerAdmin
 
 
 class UserListCreateView(generics.ListAPIView, generics.CreateAPIView, PasswordValidatorMixin):
-    queryset = User.objects.filter(is_active=True)
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [isStaffEditorPermission]
+
+    def get_queryset(self):
+        return User.objects.filter(~Q(id=self.request.user.pk), is_active=True).order_by("username")
 
     def get_serializer_class(self):
         if self.request.user.is_staff:

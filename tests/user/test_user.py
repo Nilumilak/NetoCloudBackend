@@ -218,7 +218,7 @@ def test_list_users_admin(client, user_factory, jwt_token_admin_factory):
     response = client.get("/api/v1/users/")
     assert response.status_code == 200
     data = response.json()
-    assert len(users) + 1 == len(data)
+    assert len(users) == len(data)
 
 
 @pytest.mark.django_db

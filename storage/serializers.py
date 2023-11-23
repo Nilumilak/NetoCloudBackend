@@ -2,13 +2,13 @@ from django.conf import settings
 from rest_framework import serializers
 
 from files.serializers import FileSerializer
-from user.serializers import UserSerializer
+from user.serializers import UserSerializer, UserSerializerAdmin
 
 from .models import Storage
 
 
 class StorageListSerializer(serializers.ModelSerializer):
-    owner = UserSerializer(read_only=True)
+    owner = UserSerializerAdmin(read_only=True)
     max_size = serializers.SerializerMethodField(read_only=True)
 
     class Meta:

@@ -71,3 +71,11 @@ jobs:
           DB_HOST: ${{ env.POSTGRES_HOST }}
           DB_PORT: ${{ env.POSTGRES_PORT }}
           DB_NAME: ${{ env.POSTGRES_DB }}
+      
+      - name: Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: expect /home/renat/NetoCloudBackend/pull.exp

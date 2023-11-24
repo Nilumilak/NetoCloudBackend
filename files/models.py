@@ -39,6 +39,9 @@ class File(models.Model):
     last_download = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ("pk",)
+
     @property
     def url_path(self):
         """

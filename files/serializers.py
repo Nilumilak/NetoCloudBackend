@@ -33,7 +33,7 @@ class FileSerializer(serializers.ModelSerializer):
         Path validation
         """
         path_pattern = re.compile(r"(?:^[^\.\\]+/)+$")
-        if not path_pattern.match(attrs) and attrs != "":
+        if not path_pattern.match(attrs) and attrs != "" or "//" in attrs:
             raise serializers.ValidationError({"error": "Invalid path format. Forbidden symbols: '.', '\\'. Example: 'home/folder/path/'."})
         return attrs
 

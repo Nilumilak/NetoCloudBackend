@@ -6,6 +6,9 @@
 Cloud storage where you can store your files, download and use their links to put in other 
 services.
 
+Backend - https://github.com/Nilumilak/NetoCloudBackend<br />
+Frontend - https://github.com/Nilumilak/NetoCloudFrontend
+
 - File managing:
   - Save files in current location or into a folder.
   - Add notes.
@@ -99,19 +102,21 @@ File:
   - su \<username>
   - psql
   - CREATE DATABASE \<db_name>;
+  - exit
 - Clone the project:
   - cd /home/\<username>
   - git clone https://github.com/Nilumilak/NetoCloudBackend.git
 - Configure .env file
-  - create .env file in the root directory (where the manage.py is located)
+  - cd NetoCloudBackend
+  - create .env file
   - Configure variables:
     - SECRET_KEY=
     - DEBUG=0
-    - ALLOWED_HOSTS=\<server ip address>>
-    - ALLOWED_CORS_ORIGINS=http://\<server ip address>>,https://\<server ip address>>
+    - ALLOWED_HOSTS=\<server ip address>
+    - ALLOWED_CORS_ORIGINS=http://\<server ip address>,https://\<server ip address>
     - DB_ENGINE=django.db.backends.postgresql
     - DB_NAME=\<db_name>
-    - DB_HOST=\<username>
+    - DB_HOST=localhost
     - DB_PORT=5432
     - DB_USER=\<username>
     - DB_PASSWORD=\<password>
@@ -126,13 +131,17 @@ File:
   - python manage.py makemigrations storage
   - python manage.py makemigrations files
   - python manage.py migrate
+- Create admin user for app
+  - python manage.py createsuperuser
 - Configure NGINX
   - sudo apt install nginx -y
-  - create config file in /etc/nginx/sites-available/project
+  - sudo systemctl start nginx
+  - sudo systemctl enable nginx
+  - create config file in /etc/nginx/sites-available/project (replace \<server ip address> \<username> with created username)
   ```
   server {
           listen 80;
-          server_name 95.163.231.197;
+          server_name <server ip address>;
 
           root  /usr/share/nginx/html;
           index index.html;
@@ -148,7 +157,7 @@ File:
           location /backend/ {
                   include proxy_params;
                   rewrite ^/backend(.*) $1 break;
-                  proxy_pass http://unix:/home/renat/NetoCloudBackend/NetoCloud/project.sock;
+                  proxy_pass http://unix:/home/<username>/NetoCloudBackend/NetoCloud/project.sock;
           }
   }
   ```
@@ -158,7 +167,7 @@ File:
 - Configure gunicorn
   - sudo apt install gunicorn -y
   - pip install gunicorn
-  - create config file in /etc/systemd/system/gunicorn.service
+  - create config file in /etc/systemd/system/gunicorn.service (replace \<username> with created username)
   ```
   [Unit]
   Description=service for gunicorn
@@ -168,10 +177,13 @@ File:
   User=<username>
   Group=www-data
   WorkingDirectory=/home/<username>/NetoCloudBackend
-  ExecStart=/home/<username>/NetoCloudBackend/venv/bin/gunicorn --access-logfile - -workers 3 -b unix:/home/<username>/NetoCloudBackend/NetoCloud/project.sock etoCloud.wsgi:application
+  ExecStart=/home/<username>/NetoCloudBackend/venv/bin/gunicorn --access-logfile - --workers 3 -b unix:/home/<username>/NetoCloudBackend/NetoCloud/project.sock NetoCloud.wsgi:application
 
   [Install]
   WantedBy=multi-user.target
   ```
+  - sudo systemctl start gunicorn
+  - sudo systemctl enable gunicorn
   - sudo systemctl daemon-reload
   - sudo systemctl restart gunicorn
+- Deploy Frontend https://github.com/Nilumilak/NetoCloudFrontend

@@ -166,3 +166,42 @@ SIMPLE_JWT = {
 }
 
 STORAGE_MAX_SIZE = 2000000000
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "django.server": {
+            "format": "[{asctime}] {levelname} {message}",
+            "style": "{",
+        }
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+        },
+        "django.server": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "django.server",
+        },
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "log.log",
+            "formatter": "django.server",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+        },
+        "django.server": {
+            "handlers": ["django.server", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

@@ -171,8 +171,12 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "django.server": {
+        "django": {
             "format": "[{asctime}] {levelname} {message}",
+            "style": "{",
+        },
+        "gunicorn": {
+            "format": "{levelname} {message}",
             "style": "{",
         }
     },
@@ -184,22 +188,44 @@ LOGGING = {
         "django.server": {
             "level": "INFO",
             "class": "logging.StreamHandler",
-            "formatter": "django.server",
+            "formatter": "django",
         },
-        "file": {
+        "django_log": {
             "level": "INFO",
             "class": "logging.FileHandler",
-            "filename": "log.log",
-            "formatter": "django.server",
+            "filename": "django.log",
+            "formatter": "django",
+        },
+        "gunicorn_access_log": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "gunicorn_access.log",
+            "formatter": "gunicorn",
+        },
+        "gunicorn_error_log": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "gunicorn_error.log",
+            "formatter": "gunicorn",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "file"],
+            "handlers": ["console", "django_log"],
             "level": "INFO",
         },
         "django.server": {
-            "handlers": ["django.server", "file"],
+            "handlers": ["django.server", "django_log"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "gunicorn.error": {
+            "handlers": ["console", "gunicorn_error_log"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "gunicorn.access": {
+            "handlers": ["console", "gunicorn_access_log"],
             "level": "INFO",
             "propagate": False,
         },

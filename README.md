@@ -21,6 +21,7 @@ Frontend - https://github.com/Nilumilak/NetoCloudFrontend
   - Change Username, Full Name, Email, Password.
   - Track files count and total space.
 - Storage max size is 2Gb for each user.
+- File's max size is 100MB.
 - Admin profile:
   - List of all active users (without current user).
   - Manage other users:
@@ -142,6 +143,7 @@ File:
   server {
           listen 80;
           server_name <server ip address>;
+          client_max_body_size 100M;
 
           root  /usr/share/nginx/html;
           index index.html;

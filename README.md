@@ -138,7 +138,7 @@ File:
   - sudo apt install nginx -y
   - sudo systemctl start nginx
   - sudo systemctl enable nginx
-  - create config file in /etc/nginx/sites-available/project (replace \<server ip address> \<username> with created username)
+  - create config file in /etc/nginx/sites-available/project (replace \<server ip address>, \<username> with created username)
   ```
   server {
           listen 80;
